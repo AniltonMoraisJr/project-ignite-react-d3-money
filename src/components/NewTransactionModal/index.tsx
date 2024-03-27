@@ -1,7 +1,11 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 import * as z from 'zod'
-import * as Dialog from '@radix-ui/react-dialog'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { TransactionContext } from '../../contexts/TransactionsContexts'
 
+import * as Dialog from '@radix-ui/react-dialog'
+import { ArrowCircleDown, ArrowCircleUp, X } from 'phosphor-react'
 import {
   CloseButton,
   Content,
@@ -9,9 +13,6 @@ import {
   TransactionType,
   TransactionTypeButton,
 } from './styles'
-import { ArrowCircleDown, ArrowCircleUp, X } from 'phosphor-react'
-import { Controller, useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 
 const newTransactionFormSchema = z.object({
   description: z.string(),
@@ -23,19 +24,21 @@ const newTransactionFormSchema = z.object({
 type NewTransactionFormInputs = z.infer<typeof newTransactionFormSchema>
 
 const NewTransactionModal: React.FC = () => {
-  const { register, control, handleSubmit } = useForm<NewTransactionFormInputs>(
-    {
+  const { createNewTransaction } = useContext(TransactionContext)
+  const { register, control, handleSubmit, reset } =
+    useForm<NewTransactionFormInputs>({
       resolver: zodResolver(newTransactionFormSchema),
       defaultValues: {
         type: 'income',
       },
-    },
-  )
+    })
 
   async function handleCreateNewTransaction(data: NewTransactionFormInputs) {
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    console.log(data)
+    const { description, price, category, type } = data
+    createNewTransaction({ description, price, category, type })
+    reset()
   }
+
   return (
     <Dialog.Portal>
       <Overlay />
